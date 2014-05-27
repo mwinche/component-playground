@@ -1,0 +1,87 @@
+section{
+	border: 1px solid #aaa;
+	padding: 3px;
+	background-color: #ccc;
+	margin: 23px 0px;
+	position: relative;
+}
+
+*{
+	box-sizing: border-box;
+}
+
+html{
+	font-family: arial;
+}
+
+form{
+	width: 20%;
+	border: 1px solid black;
+	padding: 0px 15px;
+	background-color: #eee;
+	display: inline-block;
+	vertical-align: top;
+}
+
+.field{
+	border: 1px solid #aaa;
+	background-color: #ccc;
+	position: absolute;
+	top: -18px;
+}
+
+input[type=text]{
+	width: 100%;
+	opacity: 0.6;
+}
+
+input[type=text]:focus{
+	opacity: 0.9;
+}
+
+#people{
+	width: 70%;
+	display: inline-block;
+	margin: 0px;
+	padding: 0px;
+}
+
+.person{
+	display: inline-block;
+
+	border: 1px solid #aaa;
+	background-color: #eee;
+	width: 200px;
+
+	margin: 10px;
+	padding: 5px;
+
+	font-weight: bold;
+}
+
+.person .name:before{
+	content: 'Name ';
+
+}
+
+.person .age:before{
+	content: 'Age ';
+}
+
+.person .gender:before{
+	content: 'Gender ';
+}
+
+.person .name, .person .age, .person .gender{
+	display: block;
+}
+
+
+.person .name:before, .person .age:before, .person .gender:before{
+	font-weight: normal;
+	width: 70px;
+	text-align: right;
+	display: inline-block;
+	padding-right: 3px;
+	color: #aaa;
+}
