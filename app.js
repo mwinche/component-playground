@@ -21,7 +21,9 @@
 		clone.querySelector('.age').innerText = age.value;
 		clone.querySelector('.gender').innerText = gender_male.checked ? gender_male.value : gender_female.checked ? gender_female.value : '';
 
-		this.appendChild(clone);
+		var shadow = this.createShadowRoot();
+
+		shadow.appendChild(clone);
 	};
 
 	var PersonElement = document.registerElement('at-person', {
