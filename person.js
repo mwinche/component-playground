@@ -1,13 +1,9 @@
 (function($){
 	"use strict";
 
-	var importDoc = document.currentScript.ownerDocument,
-		personTmpl = importDoc.getElementById('person'),
+	var ATTRS = ['name', 'age', 'gender'];
 
-		name = $('name'),
-		age = $('age'),
-		gender_male = $('gender_male'),
-		gender_female = $('gender_female');
+	var personTmpl = $('person');
 
 
 	function customElement(elementName, overrides){
@@ -18,13 +14,21 @@
 
 	customElement('at-person', {
 		createdCallback: function(){
-			var clone = personTmpl.content.cloneNode(true);
+			this.createShadowRoot().appendChild(personTmpl.content.cloneNode(true));
 
-			clone.querySelector('.name').innerText = name.value;
-			clone.querySelector('.age').innerText = age.value;
-			clone.querySelector('.gender').innerText = gender_male.checked ? gender_male.value : gender_female.checked ? gender_female.value : '';
+			this.updateValue('name', this.getAttribute('name'));
+			this.updateValue('age', this.getAttribute('age'));
+			this.updateValue('gender', this.getAttribute('gender'));
+		},
 
-			this.createShadowRoot().appendChild(clone);
+		attributeChangedCallback: function(attrName, oldVal, newVal){
+			this.updateValue(attrName, newVal);
+		},
+
+		updateValue: function(key, value){
+			if(ATTRS.indexOf(key) > -1 && this.shadowRoot && this.shadowRoot.querySelector('.' + key)){
+				this.shadowRoot.querySelector('.' + key).innerText = value;
+			}
 		}
 	});
-})(document.getElementById.bind(document));
+})(document.currentScript.ownerDocument.getElementById.bind(document.currentScript.ownerDocument));
