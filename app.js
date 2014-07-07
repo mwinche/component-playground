@@ -1,6 +1,8 @@
 (function($){
 	"use strict";
-	
+
+	var	ATTRS = ['name', 'age', 'gender'];
+
 	var lifeButton = $('life'),
 		peopleList = $('people'),
 		personTmpl = $('person');
@@ -10,15 +12,50 @@
 		gender_male = $('gender_male'),
 		gender_female = $('gender_female');
 
+
+	function customElement(elementName, overrides){
+		var proto = Object.create(HTMLElement.prototype);
+
+		for(var key in overrides){
+			proto[key] = overrides[key];
+		}
+
+		return document.registerElement(elementName, {
+			prototype: proto
+		});
+	}
+
+
+	//Create custom at-person element
+	customElement('at-person', {
+		createdCallback: function(){
+			this.appendChild(personTmpl.content.cloneNode(true));
+
+			this.updateValue('name', this.getAttribute('name'));
+			this.updateValue('age', this.getAttribute('age'));
+			this.updateValue('gender', this.getAttribute('gender'));
+		},
+
+		attributeChangedCallback: function(attrName, oldVal, newVal){
+			this.updateValue(attrName, newVal);
+		},
+
+		updateValue: function(key, value){
+			if(ATTRS.indexOf(key) > -1 && this.querySelector('.' + key)){
+				this.querySelector('.' + key).innerText = value;
+			}
+		}
+	});
+
+	//Click handler just creates a new at-person element
 	lifeButton.addEventListener('click', function(){
-		var clone = personTmpl.content.cloneNode(true);
+		var ele = document.createElement('at-person');
 
-		clone.querySelector('.name').innerText = name.value;
-		clone.querySelector('.age').innerText = age.value;
-		clone.querySelector('.gender').innerText = gender_male.checked ? gender_male.value : gender_female.checked ? gender_female.value : '';
+		ele.setAttribute('name', name.value);
+		ele.setAttribute('age', age.value);
+		ele.setAttribute('gender', gender_male.checked ? gender_male.value : gender_female.checked ? gender_female.value : '');
 
-
-		peopleList.insertBefore(clone, peopleList.firstChild);
+		peopleList.insertBefore(ele, peopleList.firstChild);
 	});
 
 })(document.getElementById.bind(document));
