@@ -1,14 +1,20 @@
 (function($){
 	"use strict";
 
-	var ATTRS = ['name', 'age', 'gender'];
+	var	ATTRS = ['name', 'age', 'gender'];
 
 	var personTmpl = $('person');
 
 
 	function customElement(elementName, overrides){
+		var proto = Object.create(HTMLElement.prototype);
+
+		for(var key in overrides){
+			proto[key] = overrides[key];
+		}
+
 		return document.registerElement(elementName, {
-			prototype: _.assign(Object.create(HTMLElement.prototype), overrides)
+			prototype: proto
 		});
 	}
 
