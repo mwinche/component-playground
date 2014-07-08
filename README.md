@@ -12,34 +12,75 @@ This README will explain each of these portions of the standard and with each ta
 
 You can serve this up using any HTTP server, but your browser will have to support Web Components for it to work (Chrome Beta or Canary at time of writing).
 
-For this tag: Shadow DOM!
+For this tag: HTML Imports!
 
-The first thing to note about Shadow DOM, it effectively moves your content into its own document. That means styles defined in an outside document no longer apply. We fix this by extracting relevant styling to `person.css` and bring it in using a CSS import.
+This is probably my favorite change. This is the point where everything is playing nice together and you get some really sweet seperation of concerns.
 
-index.html: 26 - 28
+What we've done now is seperate out `app.js` into two files, `app.js` and `person.js`. The concerns start to be very clear. `app.js` is responsible for the form action up until it creates the new custom element `at-person`. `person.js` is responsible for making that element do what it should.
 
-	<style>
-		@import url("person.css");
-	</style>
+Here is snippet which we pulled out of `app.js` in `person.js`. person.js: 1 - 42
 
-But that just deals with the effects Shadow DOM has, how did we implement it in the first place? It is actually very simple. Every element has a new method `createShadowRoot`. Just call it and it will create Shadow DOM for that element. Note that this can be used on any element. Not just custom elements or stuff from a template. Which highlights one of the awesome things about the Web Component standard: all of these pieces can be used independent of each other! That said, they work extremely well together (and obviously were designed to be used that way).
-
-app.js: 31 - 37
-
-	createdCallback: function(){
-		this.createShadowRoot().appendChild(personTmpl.content.cloneNode(true));
-
-		this.updateValue('name', this.getAttribute('name'));
-		this.updateValue('age', this.getAttribute('age'));
-		this.updateValue('gender', this.getAttribute('gender'));
-	},
-
-app.js 43 - 47
-
-	updateValue: function(key, value){
-		if(ATTRS.indexOf(key) > -1 && this.shadowRoot.querySelector('.' + key)){
-			this.shadowRoot.querySelector('.' + key).innerText = value;
+	(function($){
+		"use strict";
+	
+		var	ATTRS = ['name', 'age', 'gender'];
+	
+		var personTmpl = $('person');
+	
+	
+		function customElement(elementName, overrides){
+			var proto = Object.create(HTMLElement.prototype);
+	
+			for(var key in overrides){
+				proto[key] = overrides[key];
+			}
+	
+			return document.registerElement(elementName, {
+				prototype: proto
+			});
 		}
-	}
+	
+	
+		//Create custom at-person element
+		customElement('at-person', {
+			createdCallback: function(){
+				this.createShadowRoot().appendChild(personTmpl.content.cloneNode(true));
+	
+				this.updateValue('name', this.getAttribute('name'));
+				this.updateValue('age', this.getAttribute('age'));
+				this.updateValue('gender', this.getAttribute('gender'));
+			},
+	
+			attributeChangedCallback: function(attrName, oldVal, newVal){
+				this.updateValue(attrName, newVal);
+			},
+	
+			updateValue: function(key, value){
+				if(ATTRS.indexOf(key) > -1 && this.shadowRoot.querySelector('.' + key)){
+					this.shadowRoot.querySelector('.' + key).innerText = value;
+				}
+			}
+		});
+	})(document.getElementById.bind(document.currentScript.ownerDocument));
 
-I put the entire methods in for context sake, but the only changes here was a call to `createShadowRoot` and utilizing the  `shadowRoot` property on the element to access its encapsulated elements.
+Admitedly, `customElement` should probably be defined somewhere else as its concerns could be greater than this one element. But it works for our purposes. We could even put it in another `<link rel="import" />` tag!
+
+`person.html` contains the template tag and brings in `person.js`. person.js: 1 - 11
+
+	<template id="person">
+		<style>
+			@import url("person.css");
+		</style>
+		<div class="person">
+			<span class="name"></span>
+			<span class="age"></span>
+			<span class="gender"></span>
+		</div>
+	</template>
+	<script src="person.js"></script>
+
+So that's nice that we can pull out all those concerns, but how do we bring them into `index.html`. It is really easy. index.html: 4
+
+	<link rel="import" href="person.html" />
+
+And that's all there is too it!
