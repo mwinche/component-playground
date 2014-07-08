@@ -12,64 +12,34 @@ This README will explain each of these portions of the standard and with each ta
 
 You can serve this up using any HTTP server, but your browser will have to support Web Components for it to work (Chrome Beta or Canary at time of writing).
 
-For this tag: Custom elements!
+For this tag: Shadow DOM!
 
-The important changes here are entirely in app.js. We use `document.registerElement` to register a new element.
+The first thing to note about Shadow DOM, it effectively moves your content into its own document. That means styles defined in an outside document no longer apply. We fix this by extracting relevant styling to `person.css` and bring it in using a CSS import.
 
-One of the best parts about this change is that we've seperated our concerns. Now the click handler only worries about creating the element with the right values (app.js: 50 - 59)
+index.html: 26 - 28
 
-	//Click handler just creates a new at-person element
-	lifeButton.addEventListener('click', function(){
-		var ele = document.createElement('at-person');
+	<style>
+		@import url("person.css");
+	</style>
 
-		ele.setAttribute('name', name.value);
-		ele.setAttribute('age', age.value);
-		ele.setAttribute('gender', gender_male.checked ? gender_male.value : gender_female.checked ? gender_female.value : '');
+But that just deals with the effects Shadow DOM has, how did we implement it in the first place? It is actually very simple. Every element has a new method `createShadowRoot`. Just call it and it will create Shadow DOM for that element. Note that this can be used on any element. Not just custom elements or stuff from a template. Which highlights one of the awesome things about the Web Component standard: all of these pieces can be used independent of each other! That said, they work extremely well together (and obviously were designed to be used that way).
 
-		peopleList.insertBefore(ele, peopleList.firstChild);
-	});
-	
-The custom element now only worries about laying out with the data that we have in the attributes. It does't care about the form that it came from.
+app.js: 31 - 37
 
-In order to make this work we have to setup the element's prototype. Custom elements use traditional prototypal inheritance. You just pass what you want to be the prototype into `document.registerElement` as the `prototype` attribute on the second argument. HTMLElements have a few callbacks which it is useful to set when making a custom element. We'll set those on that prototype.
+	createdCallback: function(){
+		this.createShadowRoot().appendChild(personTmpl.content.cloneNode(true));
 
-app.js: 29 - 48
+		this.updateValue('name', this.getAttribute('name'));
+		this.updateValue('age', this.getAttribute('age'));
+		this.updateValue('gender', this.getAttribute('gender'));
+	},
 
-	//Create custom at-person element
-	customElement('at-person', {
-		createdCallback: function(){
-			this.appendChild(personTmpl.content.cloneNode(true));
+app.js 43 - 47
 
-			this.updateValue('name', this.getAttribute('name'));
-			this.updateValue('age', this.getAttribute('age'));
-			this.updateValue('gender', this.getAttribute('gender'));
-		},
-
-		attributeChangedCallback: function(attrName, oldVal, newVal){
-			this.updateValue(attrName, newVal);
-		},
-
-		updateValue: function(key, value){
-			if(ATTRS.indexOf(key) > -1 && this.querySelector('.' + key)){
-				this.querySelector('.' + key).innerText = value;
-			}
+	updateValue: function(key, value){
+		if(ATTRS.indexOf(key) > -1 && this.shadowRoot.querySelector('.' + key)){
+			this.shadowRoot.querySelector('.' + key).innerText = value;
 		}
-	});
-	
-Note that we also exposed a new method for our element to allow programitic access of updating attributes, `updateValue`, which also make use of internally.
-	
-Also note the convenience function I wrote for creating custom elements. app.js: 16 - 26
-
-	function customElement(elementName, overrides){
-		var proto = Object.create(HTMLElement.prototype);
-
-		for(var key in overrides){
-			proto[key] = overrides[key];
-		}
-
-		return document.registerElement(elementName, {
-			prototype: proto
-		});
 	}
 
-This function does assume that you want to only extend `HTMLElement`, but it is sufficent for our purposes.
+I put the entire methods in for context sake, but the only changes here was a call to `createShadowRoot` and utilizing the  `shadowRoot` property on the element to access its encapsulated elements.

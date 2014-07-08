@@ -1,0 +1,39 @@
+.person{
+	display: inline-block;
+
+	border: 1px solid #aaa;
+	background-color: #eee;
+	width: 200px;
+
+	margin: 10px;
+	padding: 5px;
+
+	font-weight: bold;
+}
+
+.person .name:before{
+	content: 'Name ';
+
+}
+
+.person .age:before{
+	content: 'Age ';
+}
+
+.person .gender:before{
+	content: 'Gender ';
+}
+
+.person .name, .person .age, .person .gender{
+	display: block;
+}
+
+
+.person .name:before, .person .age:before, .person .gender:before{
+	font-weight: normal;
+	width: 70px;
+	text-align: right;
+	display: inline-block;
+	padding-right: 3px;
+	color: #aaa;
+}

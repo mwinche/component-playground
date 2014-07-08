@@ -29,7 +29,7 @@
 	//Create custom at-person element
 	customElement('at-person', {
 		createdCallback: function(){
-			this.appendChild(personTmpl.content.cloneNode(true));
+			this.createShadowRoot().appendChild(personTmpl.content.cloneNode(true));
 
 			this.updateValue('name', this.getAttribute('name'));
 			this.updateValue('age', this.getAttribute('age'));
@@ -41,8 +41,8 @@
 		},
 
 		updateValue: function(key, value){
-			if(ATTRS.indexOf(key) > -1 && this.querySelector('.' + key)){
-				this.querySelector('.' + key).innerText = value;
+			if(ATTRS.indexOf(key) > -1 && this.shadowRoot.querySelector('.' + key)){
+				this.shadowRoot.querySelector('.' + key).innerText = value;
 			}
 		}
 	});
